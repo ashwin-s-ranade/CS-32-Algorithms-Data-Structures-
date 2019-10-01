@@ -1,0 +1,72 @@
+1) No classes have any known bugs. 
+2) Each function satisfies big O requirements for the project specification. I used a map for the GenomeMatcher class,
+which took a look of memory, so I had to manually increase the memory space in my visual studios c++, from 2gb to 8gb or something. 
+However, this only affects space complexity, and time complexity remains reasonable. 
+
+3) Psuedocode for trie's find() method and GenomeMatcher's findGenomesWithThisDNA() method
+
+find() pseudocode: 
+
+find (const string& key, bool exactMatchOnly)
+	iterate through all children of root node (to make sure first character alwyas matches)
+		if child label exactly matches key
+			return child values
+		if child label first character matches key first character
+			set pointer to that child
+	if ptr is unassigned
+		return empty vector 
+	return findHelper (all of key except first character, exactMatchOnly, ptr)
+
+
+vector<ValueType> findHelper (string key, bool exactMatchOnly, Node* leaf) const
+	declare results vector 
+	if key size is 1 //base case 
+		for each child node in leaf 
+			if exactMatchOnly
+				insert only child nodes whose label matches key into result vector
+			else (not exactMatchOnly)
+				insert all child nodes into result vector 
+	else
+		for each child node in leaf 
+			if exactMatchOnly is false and our label character doesn't match with key
+				recursively call findHelper, but with exactMatchOnly now equal to true 
+				add return value of this recursive call to result vector 
+			else if label character matches key character 
+				recursively call findHelper, without changing exactMatchOnly 
+				insert return value into result vector 
+	return results vector 
+
+
+
+
+GenomeMatcher's findGenomesWithThisDNA() pseudocode: 
+
+bool findGenomesWithThisDNA(string fragment, int minimumLength, bool exactMatchOnly, vector<DNAMatch> matches)
+	if fragment size or minimumLength are invalid
+		return false 
+	for each substring greater or equal to minimumLength and less than or equal to fragment size 
+		declare results vector 
+		if substring size greater than minimumSearchLength 
+			add all results of tree.find() method to results vector, with exactMatchOnly == true  
+			if results is empty and exactMatchOnly == false, recall with exactMatchOnly == false 
+
+			for each genome in results 
+				if we can extract from position specified, and it equals the same substring in our fragment
+					we have a valid match
+					check if valid add to matches (no repeats, and prefer longer fragment lengths)
+						if valid, add to matches vector 
+
+				if exactMatchOnly == false 
+					check if extraction matches same substring in fragment, but allow for 1 character of error, and if we previously matched perfectly 
+					if valid match, add to matches 
+					if extraction matches are the same substring in fragment, and we previously already used 1 character for error
+						if valid match, add to matches 
+
+		else if substring size is the same as minimumSearchLength
+			add everything to a results vector using tree.find()
+			go through genomes in results vector 
+				if valid add (not a short repeat in matches)
+					add to matches 
+
+	return true if we have matches, false if we don't 
+
